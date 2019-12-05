@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frodo-harbor-webhook
+  labels:
+    app.kubernetes.io/version: v2.6.10
+spec:
+  replicas: 3
+  strategy:
+    rollingUpdate:
+      maxSurge: 50%
+      maxUnavailable: 50%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/version: v2.6.10
+    spec:
+      containers:
+      - name: webhook
+        image: karstensiemer/webhook:2.6.10
+        imagePullPolicy: Always
+        args:
+        - -verbose
+        - -hotreload
+        - -hooks=/etc/webhook/harbor.json
+        env:
+        - name: HARBOR_PASS
+          valueFrom:
+            secretKeyRef:
+              name: frodo-harbor-core
+              key: HARBOR_ADMIN_PASSWORD
+        #livenessProbe:
+        #  httpGet:
+        #    path: /
+        #    port: $(PORT)
+        #    scheme: HTTP
+        #  initialDelaySeconds: 5
+        #readinessProbe:
+        #  httpGet:
+        #    path: /
+        #    port: $(PORT)
+        #    scheme: HTTP
+        ports:
+        - containerPort: 9000
+          protocol: TCP
+          name: http
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        volumeMounts:
+        - mountPath: /etc/webhook/
+          name: webhooks
+        - mountPath: /etc/scripts/
+          name: scripts
+      volumes:
+      - name: webhooks
+        configMap:
+          name: frodo-harbor-webhooks
+      - name: scripts
+        configMap:
+          name: frodo-harbor-webhook-scripts
+          defaultMode: 0777
