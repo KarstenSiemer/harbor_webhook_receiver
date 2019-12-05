@@ -14,3 +14,6 @@ The design here is that harbor will be called via an ingress with a tls certific
 Important to note is that the script needs to be executed in a directory of the container where it has write priviledges.
 That is done to able to do less http calls to harbor to reduce traffic.
 Using normal text files a cache is implemented that remembers if the global labels have already been created and with which id those labels are referenced inside harbor. So that, when doing bulk scans across harbor images, those requests do not have to be made each time an image is scanned.
+
+It is a bit sad that the admin user has to be used for this. But harbor lacks fine grained user authentification for robots.
+Robots expire after some time and a user with priviledges has to be used to create a new robot. Also, there is no group feature yet, when oidc is activated.
