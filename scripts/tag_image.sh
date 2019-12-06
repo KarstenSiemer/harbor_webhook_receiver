@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 RESOURCE_URL="${1}"
 SCAN_SERVERITY="${2}"
 HARBOR_USER="admin"
@@ -18,8 +18,7 @@ gather_label_id(){
                     "https://${HARBOR_URL}/api/labels?name=CVE%3A${LABEL_NAME}&scope=g" \
                     -H "accept: application/json" \
                     -H "authorization: Basic ${AUTH}" | \
-                    grep '"id"' | \
-                    grep -m1 -Eo "[0-9]{1,9}"
+                    jq '.[].id'
                   )
   echo "${LABEL_ID}"
 }
@@ -93,7 +92,7 @@ file_older_than_1h(){
 
 check_file(){
   local FILE_NAME="${1}"
-  if [[ -f "${FILE_NAME}" ]] && [[ ! $(file_older_than_1h "${FILE_NAME}") ]]
+  if [[ -f "${FILE_NAME}" ]] && ! file_older_than_1h "${FILE_NAME}"
   then
     true
   else
